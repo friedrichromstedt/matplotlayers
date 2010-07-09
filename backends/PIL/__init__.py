@@ -1,0 +1,1 @@
+from matplotlayers.backends.PIL.figure_canvas import FigureCanvasPIL
