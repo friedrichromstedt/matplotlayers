@@ -1,0 +1,18 @@
+Name: matplotlayers
+Author: Friedrich Romstedt
+AuthorEMail: friedrichromstedt@gmail.com
+Summary: Layer support for matplotlib
+Version: 0.1.1
+License: MIT
+
+Library:
+    Packages:
+        matplotlayers,
+        matplotlayers.backends,
+        matplotlayers.backends.PIL,
+        matplotlayers.backends.tk,
+        matplotlayers.layers
+
+ExtraSourceFiles:
+    matplotlayers/Test/*.py,
+    LICENSE
