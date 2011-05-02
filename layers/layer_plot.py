@@ -197,7 +197,7 @@ class LayerPlot(matplotlayers.layer.Layer):
         if x_ua:
             value = x.value
             # SIGMAS = None uses upy's default:
-            yerr = x.uncertainty(sigmas)
+            xerr = x.uncertainty(sigmas)
         else:
             if x is not None:
                 value = numpy.asarray(x)

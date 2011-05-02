@@ -27,10 +27,11 @@ import matplotlayers.layer
 import keyconf
 
 
-class LayerPColor(matplotlayers.layer.Layer):
+class LayerPColorMesh(matplotlayers.layer.Layer):
     def __init__(self, **kwargs):
         """CMAP may be an abbreviation as defined by matplotlib, it defaults 
-        to 'gray'.
+        to 'gray'.  The kwarg LAYER_COLORBAR may be a matplotlayers.\\
+        LayerColorbar instance.
         
         The layer is specified empty, if X, Y, or C are not specified or
         None."""
@@ -45,6 +46,12 @@ class LayerPColor(matplotlayers.layer.Layer):
         self.add_components(XYC = self._XYC)
         self.set_aliases(X = 'XYC_X', Y = 'XYC_Y', C = 'XYC_C')
 
+        # We forward non-pcolormesh arguments to some dedicated Configuration, 
+        # because they should not show up in the call to pcolormesh().
+        self._explicits = keyconf.Configuration()
+        self.add_components(explicits=self._explicits)
+        self.set_aliases(layer_colorbar='explicits_layer_colorbar')
+        
         self.configure(**kwargs)
 
     def to_axes(self, axes):
@@ -65,4 +72,8 @@ class LayerPColor(matplotlayers.layer.Layer):
         C = self['C']
         # X, Y, C are actually stored in ._XYC.
 
-        axes.pcolor(X, Y, C, **self)
+        mappable = axes.pcolormesh(X, Y, C, **self)
+
+        # Notify also the LayerColorbar of the new mappable.
+        if self.is_configured('layer_colorbar'):
+            self['layer_colorbar'].set_mappable(mappable)

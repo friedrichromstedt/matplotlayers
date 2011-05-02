@@ -24,7 +24,7 @@
 """Defines a Canvas for a matplotlib.figure.Figure instance to be rendered as 
 a PIL image."""
 
-import Image
+import PIL.Image
 import matplotlib.backends.backend_agg as mpl_backend_agg
 
 
@@ -49,5 +49,5 @@ class FigureCanvasPIL:
         agg_canvas.draw()
         image_string = agg_canvas.tostring_rgb()
 
-        image = Image.fromstring("RGB", shape, image_string)
+        image = PIL.Image.fromstring("RGB", shape, image_string)
         return image

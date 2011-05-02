@@ -25,6 +25,7 @@
 to hold a stack of layers."""
 
 import matplotlib.figure
+import matplotlib.ticker
 
 
 class Stack:
@@ -49,7 +50,10 @@ class Stack:
             polar = None,
             autoscale_both_on = None,
             autoscale_x_on = None,
-            autoscale_y_on = None):
+            autoscale_y_on = None,
+            colorbar=None,
+            locator_x=None,
+            locator_y=None):
         """FIGURE is the matplotlib.figure.Figure instance where to act on.
         AXES is optionally an existing axes instance.  If AXES is not given,
         a new axes instance will be created, either a cartesian, or a polar if
@@ -59,7 +63,17 @@ class Stack:
         AUTOSCALING_X, and AUTOSCALING_Y.  If AUTOSCALING_BOTH is given, it
         overrides AUTOSCALING_X and AUTOSCALING_Y.  If the autoscaling for 
         some axis isn't given (either by AUTOSCALING_BOTH or by the other
-        arguments), it defaults to True."""
+        arguments), it defaults to True.
+        
+        If COLORBAR isn't None, but 'vertical' or 'horizontal', the Axes
+        will be initialised by setting the label and ticks position to the
+        appropriate position.  This is useful if the Stack is intended to be
+        used for a LayerColorbar, since the LayerColorbar cannot draw a
+        Colorbar until it has received data, and therefore there would be
+        nothing updating the ticks and label positions.
+        
+        LOCATOR_X and LOCATOR_Y are optional and are the major locator to be
+        used for the respective axes."""
 
         # Define the default values for AUTOSCALING_X/Y.  May be overridden
         # by AUTOSCALING_BOTH if that is given ...
@@ -76,12 +90,14 @@ class Stack:
             axes = figure.add_axes(
                     (left, bottom, width, height),
                     polar = polar)
+            axes.hold(True)
 
         # Take over the axes.
         self.axes = axes
 
         # Initialise the title etc. to some values.
         self.title = self.axes.get_title()
+        self.title_kwargs = {}
         self.xlabel = self.axes.get_xlabel()
         self.ylabel = self.axes.get_ylabel()
 
@@ -94,6 +110,19 @@ class Stack:
                 x_on = autoscale_x_on,
                 y_on = autoscale_y_on)
 
+        # Store the locators ...
+
+        self.set_locators(locator_x=locator_x, locator_y=locator_y)
+
+        # Prepare for use as a colorbar ...
+        #
+        # Do this after setting the locators and not before.  Because
+        # set_colorbar() sets also the xticks, but set_locators overrides
+        # this by setting the xlocator to AutoLocator(), when done in the
+        # wrong order.
+
+        self.set_colorbar(colorbar)
+    
         # The layers present.
         self._layers = []
         
@@ -173,11 +202,12 @@ class Stack:
     # Property set methods ...
     #
         
-    def set_title(self, title):
-        """Set the title to string TITLE."""
+    def set_title(self, title, **title_kwargs):
+        """Set the title to string TITLE with kwargs *title_kwargs*."""
 
-        self.axes.set_title(title)
+        self.axes.set_title(title, **title_kwargs)
         self.title = title
+        self.title_kwargs = title_kwargs
 
     def set_xlabel(self, xlabel):
         """Set the xlabel to string XLABEL."""
@@ -273,6 +303,46 @@ class Stack:
         if x_on or y_on:
             self.axes.autoscale_view()
 
+    def _update_colorbar_mode(self):
+        """Ensures the colorbar mode if present.  Note that returning from
+        colorbar mode to normal mode will not work properly except you
+        do a .clear()."""
+
+        # Copied from matplotlib.colorbar.ColorbarBase.config_axis().
+
+        if self.colorbar == 'vertical':
+            self.axes.xaxis.set_ticks([])
+            self.axes.yaxis.set_label_position('right')
+            self.axes.yaxis.set_ticks_position('right')
+
+        elif self.colorbar == 'horizontal':
+            self.axes.yaxis.set_ticks([])
+            self.axes.xaxis.set_label_position('bottom')
+
+    def set_colorbar(self, colorbar):
+        """Sets the colorbar mode."""
+
+        self.colorbar = colorbar
+        self._update_colorbar_mode()
+
+    def set_locators(self, locator_x, locator_y):
+        """Sets the locators to be used.  None means 'default locator'."""
+
+        self.locator_x = locator_x
+        self.locator_y = locator_y
+
+        # Set locators ...
+
+        if self.locator_x is not None:
+            self.axes.xaxis.set_major_locator(self.locator_x)
+        else:
+            self.axes.xaxis.set_major_locator(matplotlib.ticker.AutoLocator())
+
+        if self.locator_y is not None:
+            self.axes.yaxis.set_major_locator(self.locator_y)
+        else:
+            self.axes.yaxis.set_major_locator(matplotlib.ticker.AutoLocator())
+
     #
     # Clearing method ...
     #
@@ -289,9 +359,18 @@ class Stack:
         # Restore the settings stored ...
 
         # Restore labeling.
-        self.set_title(self.title)
+        self.set_title(self.title, **self.title_kwargs)
         self.set_xlabel(self.xlabel)
         self.set_ylabel(self.ylabel)
+        
+        # Restore colorbar mode
+        self._update_colorbar_mode()
+
+        # Restore locators
+        if self.locator_x is not None:
+            self.axes.xaxis.set_major_locator(self.locator_x)
+        if self.locator_y is not None:
+            self.axes.yaxis.set_major_locator(self.locator_y)
 
         # Restore lims.  If autoscaling was turned on, the corresponding
         # limit will be None, and the setting is maintained, because
