@@ -26,40 +26,47 @@ import keyconf
 
 
 class Layer(keyconf.Configuration):
-	"""Base class for a layer.  The class is derived from 
-	keyconf.Configuration, to support the .configure() method seamlessly."""
+    """Base class for a layer.  The class is derived from 
+    keyconf.Configuration, to support the .configure() method seamlessly."""
 
-	def __init__(self):
-		"""Sets the layer to has-changed."""
+    def __init__(self):
+        """Sets the layer to has-changed."""
 
-		keyconf.Configuration.__init__(self)
+        keyconf.Configuration.__init__(self)
 
-		self.set_changed()
-	#
-	# Tracking status ...
-	#
+        self.set_changed()
+    #
+    # Tracking status ...
+    #
 
-	def configure(self, **kwargs):
-		self.set_changed()
-		keyconf.Configuration.configure(self, **kwargs)
+    def configure(self, **kwargs):
+        self.set_changed()
+        keyconf.Configuration.configure(self, **kwargs)
 
-	def unconfigure(self, *args):
-		self.set_changed()
-		keyconf.Configuration.unconfigure(self, *args)
+    def unconfigure(self, *args):
+        self.set_changed()
+        keyconf.Configuration.unconfigure(self, *args)
 
-	#
-	# Changed-flag methods ...
-	#
+    #
+    # Changed-flag methods ...
+    #
 
-	def set_changed(self):
-		"""Flag that the layer has changed."""
+    def set_changed(self):
+        """Flag that the layer has changed."""
 
-		self.changed = True
+        self.changed = True
 
-	def unset_changed(self):
-		"""Flag that the layer is unchanged."""
+    def unset_changed(self):
+        """Flag that the layer is unchanged."""
 
-		self.changed = False
+        self.changed = False
 
-	def has_changed(self):
-		return self.changed
+    def has_changed(self):
+        return self.changed
+
+    # 
+    # Comaprison ...
+    #
+
+    def __eq__(self, other):
+        return id(self) == id(other)

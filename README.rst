@@ -40,6 +40,7 @@ Plotting Example
 ----------------
 
 ::
+
     import matplotlib.figure
     import matplotlayers
 
