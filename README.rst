@@ -142,3 +142,12 @@ following somewhere::
 
 Otherwise your application might bisbehave in slight to strong ways or might
 even crash or hang.  This is due to some Tkinter restrictions.
+
+Installation
+============
+
+matplotlayers uses `Bento <http://github.com/cournape/Bento>`_ as its 
+packaging solution.  Please use Bento for installing matplotlayers.
+
+You further need `keyconf <http://github.com/friedrichromstedt/keyconf>`_ to
+use matplotlayers.  ``keyconf`` supplies the keyword configuration framework.
